@@ -11,41 +11,56 @@ from typing import Dict, Any
 # ==============================================================================
 
 TOOLS_SCHEMA = [
-    # Tool 1: Đã được định nghĩa mẫu sẵn cho Học viên tham khảo
+    # Tool 1: Kiểm tra tình trạng trống của phòng họp và thiết bị sẵn có
     {
-        "name": "academic_query",
-        "description": "Tra cứu hồ sơ và thông tin học vụ của sinh viên VinUni bằng mã sinh viên.",
+        "name": "check_room_availability",
+        "description": "Kiểm tra tình trạng trống của phòng họp và danh sách thiết bị sẵn có tại một thời điểm cụ thể.",
         "parameters": {
             "type": "object",
             "properties": {
-                "student_id": {
+                "room_id": {
                     "type": "string",
-                    "description": "Mã sinh viên cần tra cứu (ví dụ: 'SV2026001')"
+                    "description": "Mã phòng họp cần kiểm tra (ví dụ: 'P301')"
+                },
+                "datetime_str": {
+                    "type": "string",
+                    "description": "Thời gian cần kiểm tra (ví dụ: '09:00 15/09/2026')"
                 }
             },
-            "required": ["student_id"]
+            "required": ["room_id", "datetime_str"]
         }
     },
-    
-    # --------------------------------------------------------------------------
-    # TODO 1.2: HỌC VIÊN HOÀN THIỆN TOOL SCHEMA CHO 'schedule_appointment'
-    # 🎯 YÊU CẦU THIẾT KẾ SCHEMA (JSON SCHEMA STANDARD):
-    # 1. Tool dùng để đặt lịch hẹn tư vấn học vụ với Cố vấn học tập VinUni.
-    # 2. Thiết kế các tham số (properties) để LLM trích xuất:
-    #    - student_id (string): Mã sinh viên cần đặt lịch (ví dụ: 'SV2026001')
-    #    - datetime_str (string): Thời gian hẹn (ví dụ: '14:00 15/09/2026')
-    #    - advisor_name (string): Tên cố vấn học tập
-    # 3. Khai báo danh sách các trường bắt buộc (required).
-    # --------------------------------------------------------------------------
+
+    # Tool 2: Tạo booking đặt phòng họp kèm thiết bị yêu cầu
     {
-        "name": "schedule_appointment",
-        "description": "Đặt lịch hẹn tư vấn học vụ với Cố vấn học tập VinUni.",
+        "name": "create_booking",
+        "description": "Tạo booking đặt phòng họp kèm thiết bị yêu cầu cho người tổ chức.",
         "parameters": {
             "type": "object",
             "properties": {
-                # TODO 1.2: Khai báo các thuộc tính tham số cho Tool tại đây...
+                "room_id": {
+                    "type": "string",
+                    "description": "Mã phòng họp cần đặt (ví dụ: 'P301')"
+                },
+                "datetime_str": {
+                    "type": "string",
+                    "description": "Thời gian đặt phòng (ví dụ: '09:00 15/09/2026')"
+                },
+                "organizer": {
+                    "type": "string",
+                    "description": "Tên người tổ chức cuộc họp"
+                },
+                "purpose": {
+                    "type": "string",
+                    "description": "Mục đích cuộc họp (ví dụ: 'Họp nhóm dự án')"
+                },
+                "equipment_needed": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Danh sách thiết bị cần dùng (ví dụ: ['Máy chiếu'])"
+                }
             },
-            "required": [] # TODO 1.2: Khai báo danh sách các trường bắt buộc tại đây...
+            "required": ["room_id", "datetime_str", "organizer"]
         }
     }
 ]
@@ -54,58 +69,89 @@ TOOLS_SCHEMA = [
 # 2. MÔ PHỎNG DỮ LIỆU & HÀM THỰC THI TOOL (EXECUTION LAYER)
 # ==============================================================================
 
-MOCK_DATABASE = {
-    "SV2026001": {
-        "full_name": "Nguyễn Văn An",
-        "class": "AI-K4",
-        "gpa": 3.85,
-        "email": "an.nv@vinuni.edu.vn",
-        "status": "Đang học",
-        "advisor": "PGS.TS Nguyễn Văn A"
+MOCK_ROOMS = {
+    "P301": {
+        "room_name": "Phòng họp P301",
+        "capacity": 10,
+        "floor": 3,
+        "equipment": ["Máy chiếu", "Màn hình TV", "Bảng trắng"],
+        "booked_slots": []
     },
-    "SV2026002": {
-        "full_name": "Trần Thị Bình",
-        "class": "AI-K4",
-        "gpa": 3.60,
-        "email": "binh.tt@vinuni.edu.vn",
-        "status": "Đang học",
-        "advisor": "TS. Lê Thị B"
+    "P205": {
+        "room_name": "Phòng họp P205",
+        "capacity": 6,
+        "floor": 2,
+        "equipment": ["Màn hình TV", "Loa hội nghị"],
+        "booked_slots": []
     }
 }
 
 
-def execute_academic_query(student_id: str) -> str:
-    """Thực thi tra cứu học vụ theo mã sinh viên"""
-    student = MOCK_DATABASE.get(student_id.strip().upper())
-    if student:
-        return json.dumps({
-            "status": "SUCCESS",
-            "student_id": student_id,
-            "data": student
-        }, ensure_ascii=False)
-    else:
+def execute_check_room_availability(room_id: str, datetime_str: str) -> str:
+    """Thực thi kiểm tra tình trạng trống của phòng họp theo mã phòng và thời gian"""
+    room = MOCK_ROOMS.get(room_id.strip().upper())
+    if not room:
         return json.dumps({
             "status": "NOT_FOUND",
-            "message": f"Không tìm thấy dữ liệu sinh viên có mã '{student_id}'"
+            "message": f"Không tìm thấy phòng họp có mã '{room_id}'."
         }, ensure_ascii=False)
+    if datetime_str in room["booked_slots"]:
+        return json.dumps({
+            "status": "BUSY",
+            "room_id": room_id,
+            "message": f"Phòng {room['room_name']} đã có lịch vào lúc {datetime_str}, vui lòng chọn khung giờ khác."
+        }, ensure_ascii=False)
+    return json.dumps({
+        "status": "AVAILABLE",
+        "room_id": room_id,
+        "data": {
+            "room_name": room["room_name"],
+            "capacity": room["capacity"],
+            "floor": room["floor"],
+            "equipment": room["equipment"]
+        },
+        "message": (
+            f"Phòng {room['room_name']} (sức chứa {room['capacity']} người, tầng {room['floor']}) "
+            f"đang trống vào lúc {datetime_str}. Thiết bị sẵn có: {', '.join(room['equipment'])}."
+        )
+    }, ensure_ascii=False)
 
 
-def execute_schedule_appointment(student_id: str, datetime_str: str, advisor_name: str = "PGS.TS Nguyễn Văn A") -> str:
-    """Thực thi đặt lịch hẹn tư vấn học vụ"""
+def execute_create_booking(room_id: str, datetime_str: str, organizer: str, purpose: str = "Họp nhóm", equipment_needed: list = None) -> str:
+    """Thực thi tạo booking đặt phòng họp kèm thiết bị yêu cầu"""
+    room = MOCK_ROOMS.get(room_id.strip().upper())
+    if not room:
+        return json.dumps({
+            "status": "NOT_FOUND",
+            "message": f"Không tìm thấy phòng họp có mã '{room_id}'."
+        }, ensure_ascii=False)
+    if datetime_str in room["booked_slots"]:
+        return json.dumps({
+            "status": "CONFLICT",
+            "message": f"Phòng {room['room_name']} đã được đặt vào lúc {datetime_str}, không thể đặt trùng lịch."
+        }, ensure_ascii=False)
+    missing_equipment = [e for e in (equipment_needed or []) if e not in room["equipment"]]
+    if missing_equipment:
+        return json.dumps({
+            "status": "EQUIPMENT_UNAVAILABLE",
+            "message": f"Phòng {room['room_name']} không có thiết bị: {', '.join(missing_equipment)}. Vui lòng chọn phòng khác hoặc bỏ bớt yêu cầu thiết bị."
+        }, ensure_ascii=False)
+    room["booked_slots"].append(datetime_str)
     return json.dumps({
         "status": "SUCCESS",
-        "booking_id": f"BK-{student_id}-99",
-        "student_id": student_id,
+        "booking_id": f"BK-{room_id}-{len(room['booked_slots']):02d}",
+        "room_id": room_id,
         "datetime": datetime_str,
-        "advisor": advisor_name,
-        "message": f"Đặt lịch thành công cho sinh viên {student_id} với {advisor_name} vào lúc {datetime_str}."
+        "organizer": organizer,
+        "purpose": purpose,
+        "message": f"Đặt phòng thành công: {room['room_name']} vào lúc {datetime_str} cho {organizer} (mục đích: {purpose})."
     }, ensure_ascii=False)
 
 
 # Router gọi tool thực tế
 TOOL_ROUTER = {
-    "academic_query": execute_academic_query,
-    "schedule_appointment": execute_schedule_appointment
+    "check_room_availability": execute_check_room_availability,
+    "create_booking": execute_create_booking
 }
 
 def dispatch_tool_call(tool_name: str, arguments: Dict[str, Any]) -> str:

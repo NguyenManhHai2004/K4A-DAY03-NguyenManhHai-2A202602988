@@ -1,29 +1,152 @@
 [
   {
     "step": 1,
-    "query": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
+    "query": "Chào bạn, bạn có thể cho biết quy định chung khi sử dụng phòng họp tại VinUni không?",
     "action_type": "FINAL_ANSWER",
-    "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool.",
-    "output": "[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-    "latency_ms": 2845.93
+    "thought": "Gemini phản hồi trực tiếp bằng văn bản (không cần gọi công cụ).",
+    "output": "Chào bạn! Dưới đây là các quy định chung khi sử dụng phòng họp tại Đại học VinUni:\n\n1. **Đặt phòng trước (Booking):** Tất cả cuộc họp cần được đăng ký và xác nhận lịch đặt phòng trước trên hệ thống quản lý phòng họp.\n2. **Sử dụng đúng thời gian:** Vui lòng bắt đầu và kết thúc cuộc họp đúng giờ đã đăng ký để tránh ảnh hưởng đến các lượt sử dụng tiếp theo.\n3. **Bảo quản thiết bị & Tài sản:** \n   * Trách nhiệm giữ gìn các thiết bị trong phòng (máy chiếu, màn hình, mic, loa, bảng trắng,...).\n   * Không tự ý tháo lắp, di chuyển hoặc thay đổi cấu hình thiết bị cố định khi chưa có sự hỗ trợ/cho phép của bộ phận IT/Vận hành.\n4. **Giữ gìn vệ sinh chung:** \n   * Dọn dẹp đồ đạc cá nhân, rác thải và lau sạch bảng sau khi kết thúc cuộc họp.\n   * Hạn chế mang đồ ăn có mùi hoặc nước uống không có nắp đậy vào phòng họp.\n5. **Tắt thiết bị khi rời phòng:** Tắt máy chiếu, hệ thống âm thanh, đèn và điều hòa (nếu có thể) trước khi ra về để tiết kiệm điện và bảo đảm an toàn.\n6. **Báo cáo sự cố:** Nếu phát hiện thiết bị hỏng hóc hoặc sự cố kỹ thuật, vui lòng báo ngay cho bộ phận IT/Bảo trì Facilities để được hỗ trợ xử lý kịp thời.\n\nNếu bạn cần kiểm tra lịch phòng trống hoặc hỗ trợ đặt phòng họp kèm thiết bị, hãy cho mình biết nhé!",
+    "latency_ms": 6628.71
   },
   {
     "step": 1,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Hãy kiểm tra xem phòng họp P301 có trống vào lúc 09:00 ngày 15/09/2026 không?",
     "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
+    "tool_name": "check_room_availability",
     "arguments": {
-      "student_id": "SV2026001"
+      "datetime_str": "09:00 15/09/2026",
+      "room_id": "P301"
     },
-    "observation": {},
-    "latency_ms": 799.12
+    "observation": {
+      "status": "AVAILABLE",
+      "room_id": "P301",
+      "data": {
+        "room_name": "Phòng họp P301",
+        "capacity": 10,
+        "floor": 3,
+        "equipment": [
+          "Máy chiếu",
+          "Màn hình TV",
+          "Bảng trắng"
+        ]
+      },
+      "message": "Phòng Phòng họp P301 (sức chứa 10 người, tầng 3) đang trống vào lúc 09:00 15/09/2026. Thiết bị sẵn có: Máy chiếu, Màn hình TV, Bảng trắng."
+    },
+    "latency_ms": 3159.83
   },
   {
     "step": 2,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Hãy kiểm tra xem phòng họp P301 có trống vào lúc 09:00 ngày 15/09/2026 không?",
     "action_type": "FINAL_ANSWER",
-    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Chưa thể trả lời chi tiết do chưa nhận được dữ liệu từ MCP Server (hãy hoàn thành TODO 2.1).",
-    "latency_ms": 10.0
+    "thought": "Gemini phản hồi trực tiếp bằng văn bản (không cần gọi công cụ).",
+    "output": "Phòng họp **P301** (tầng 3, sức chứa 10 người) **đang trống** vào lúc **09:00 ngày 15/09/2026**.\n\n**Thông tin chi tiết về phòng:**\n- **Sức chứa:** 10 người\n- **Vị trí:** Tầng 3\n- **Thiết bị sẵn có:** Máy chiếu, Màn hình TV, Bảng trắng\n\nNếu bạn muốn tiến hành đặt phòng này, vui lòng cung cấp thêm tên người tổ chức, mục đích cuộc họp và danh sách thiết bị cần sử dụng (nếu có).",
+    "latency_ms": 4323.11
+  },
+  {
+    "step": 1,
+    "query": "Đặt phòng P205 lúc 14:00 ngày 16/09/2026 cho buổi họp nhóm dự án AI, người tổ chức là Nguyễn Văn An.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "check_room_availability",
+    "arguments": {
+      "datetime_str": "14:00 16/09/2026",
+      "room_id": "P205"
+    },
+    "observation": {
+      "status": "AVAILABLE",
+      "room_id": "P205",
+      "data": {
+        "room_name": "Phòng họp P205",
+        "capacity": 6,
+        "floor": 2,
+        "equipment": [
+          "Màn hình TV",
+          "Loa hội nghị"
+        ]
+      },
+      "message": "Phòng Phòng họp P205 (sức chứa 6 người, tầng 2) đang trống vào lúc 14:00 16/09/2026. Thiết bị sẵn có: Màn hình TV, Loa hội nghị."
+    },
+    "latency_ms": 3657.87
+  },
+  {
+    "step": 2,
+    "query": "Đặt phòng P205 lúc 14:00 ngày 16/09/2026 cho buổi họp nhóm dự án AI, người tổ chức là Nguyễn Văn An.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "create_booking",
+    "arguments": {
+      "purpose": "Họp nhóm dự án AI",
+      "organizer": "Nguyễn Văn An",
+      "room_id": "P205",
+      "datetime_str": "14:00 16/09/2026"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "booking_id": "BK-P205-01",
+      "room_id": "P205",
+      "datetime": "14:00 16/09/2026",
+      "organizer": "Nguyễn Văn An",
+      "purpose": "Họp nhóm dự án AI",
+      "message": "Đặt phòng thành công: Phòng họp P205 vào lúc 14:00 16/09/2026 cho Nguyễn Văn An (mục đích: Họp nhóm dự án AI)."
+    },
+    "latency_ms": 4584.45
+  },
+  {
+    "step": 3,
+    "query": "Đặt phòng P205 lúc 14:00 ngày 16/09/2026 cho buổi họp nhóm dự án AI, người tổ chức là Nguyễn Văn An.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Gemini phản hồi trực tiếp bằng văn bản (không cần gọi công cụ).",
+    "output": "Yêu cầu đặt phòng họp của bạn đã được thực hiện thành công. Dưới đây là thông tin chi tiết về cuộc hẹn:\n\n- **Mã đặt phòng (Booking ID):** BK-P205-01\n- **Phòng họp:** P205\n- **Thời gian:** 14:00 ngày 16/09/2026\n- **Người tổ chức:** Nguyễn Văn An\n- **Mục đích:** Họp nhóm dự án AI\n- **Trạng thái:** Thành công\n\nNếu bạn cần hỗ trợ thêm thông tin hoặc dịch vụ nào khác, vui lòng liên hệ thêm!",
+    "latency_ms": 3768.64
+  },
+  {
+    "step": 1,
+    "query": "Kiểm tra xem phòng P205 có trống lúc 10:00 ngày 17/09/2026 không, nếu trống thì đặt phòng luôn cho tôi (Trần Thị Bình) để họp báo cáo tiến độ dự án.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "create_booking",
+    "arguments": {
+      "room_id": "P205",
+      "datetime_str": "09:00 15/09/2026",
+      "organizer": "Nguyễn Văn An",
+      "purpose": "Họp nhóm dự án"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "booking_id": "BK-P205-02",
+      "room_id": "P205",
+      "datetime": "09:00 15/09/2026",
+      "organizer": "Nguyễn Văn An",
+      "purpose": "Họp nhóm dự án",
+      "message": "Đặt phòng thành công: Phòng họp P205 vào lúc 09:00 15/09/2026 cho Nguyễn Văn An (mục đích: Họp nhóm dự án)."
+    },
+    "latency_ms": 731.76
+  },
+  {
+    "step": 2,
+    "query": "Kiểm tra xem phòng P205 có trống lúc 10:00 ngày 17/09/2026 không, nếu trống thì đặt phòng luôn cho tôi (Trần Thị Bình) để họp báo cáo tiến độ dự án.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Đã có đủ Observation từ Tool trước đó, tổng hợp câu trả lời cuối cùng.",
+    "output": "[Mock Agent Response]: Đặt phòng thành công: Phòng họp P205 vào lúc 09:00 15/09/2026 cho Nguyễn Văn An (mục đích: Họp nhóm dự án).",
+    "latency_ms": 802.34
+  },
+  {
+    "step": 1,
+    "query": "Hãy kiểm tra tình trạng phòng họp P999 vào lúc 10:00 ngày 20/09/2026.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "check_room_availability",
+    "arguments": {
+      "room_id": "P999",
+      "datetime_str": "10:00 20/09/2026"
+    },
+    "observation": {
+      "status": "NOT_FOUND",
+      "message": "Không tìm thấy phòng họp có mã 'P999'."
+    },
+    "latency_ms": 1036.68
+  },
+  {
+    "step": 2,
+    "query": "Hãy kiểm tra tình trạng phòng họp P999 vào lúc 10:00 ngày 20/09/2026.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Đã có đủ Observation từ Tool trước đó, tổng hợp câu trả lời cuối cùng.",
+    "output": "[Mock Agent Response]: Không tìm thấy phòng họp có mã 'P999'.",
+    "latency_ms": 860.65
   }
 ]

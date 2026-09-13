@@ -1,0 +1,37 @@
+[
+  {
+    "id": "TC01",
+    "type": "direct_query",
+    "question": "Chào bạn, bạn có thể cho biết quy định chung khi sử dụng phòng họp tại VinUni không?",
+    "expected_behavior": "Chatbot trả lời trực tiếp từ System Prompt, không cần gọi bất kỳ Tool nào.",
+    "complexity": "Low"
+  },
+  {
+    "id": "TC02",
+    "type": "single_tool_query",
+    "question": "Hãy kiểm tra xem phòng họp P301 có trống vào lúc 09:00 ngày 15/09/2026 không?",
+    "expected_behavior": "Agent nhận diện nhu cầu kiểm tra lịch phòng, tự động phát sinh Tool Call 'check_room_availability' với room_id P301 và thời gian tương ứng.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC03",
+    "type": "appointment_booking",
+    "question": "Đặt phòng P205 lúc 14:00 ngày 16/09/2026 cho buổi họp nhóm dự án AI, người tổ chức là Nguyễn Văn An.",
+    "expected_behavior": "Agent tự động phát sinh Tool Call 'create_booking' với đúng mã phòng, thời gian và tên người tổ chức.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC04",
+    "type": "multi_step_reasoning",
+    "question": "Kiểm tra xem phòng P205 có trống lúc 10:00 ngày 17/09/2026 không, nếu trống thì đặt phòng luôn cho tôi (Trần Thị Bình) để họp báo cáo tiến độ dự án.",
+    "expected_behavior": "Agent thực hiện chuỗi suy luận ReAct: kiểm tra tình trạng phòng trước (check_room_availability), sau đó tiến hành đặt phòng (create_booking) nếu phòng còn trống.",
+    "complexity": "High"
+  },
+  {
+    "id": "TC05",
+    "type": "edge_case_handling",
+    "question": "Hãy kiểm tra tình trạng phòng họp P999 vào lúc 10:00 ngày 20/09/2026.",
+    "expected_behavior": "Agent nhận kết quả NOT_FOUND từ Tool và đưa ra phản hồi lịch sự, chính xác không bịa đặt dữ liệu, thông báo phòng không tồn tại.",
+    "complexity": "Medium"
+  }
+]

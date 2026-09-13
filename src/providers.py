@@ -4,6 +4,7 @@ Hỗ trợ Native Tool Calling và chuyển đổi linh hoạt qua biến môi t
 """
 
 import os
+import re
 import sys
 import json
 from typing import Dict, Any, List
@@ -36,27 +37,47 @@ class MockOfflineProvider(BaseLLMProvider):
 
     def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
         prompt_lower = prompt.lower()
-        
-        # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
+
+        # Nếu đây là lượt tiếp theo sau khi đã có Observation từ Tool trước đó,
+        # mô phỏng bước "tổng hợp câu trả lời cuối cùng" của ReAct Loop thay vì gọi lặp lại Tool.
+        if "[lịch sử xử lý]" in prompt_lower:
+            message_match = re.search(r'"message":\s*"([^"]*)"', prompt)
+            summary = message_match.group(1) if message_match else "Đã xử lý xong yêu cầu dựa trên kết quả Tool trả về."
             return {
-                "type": "tool_call",
-                "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
+                "type": "text",
+                "content": f"[Mock Agent Response]: {summary}",
+                "thought": "Đã có đủ Observation từ Tool trước đó, tổng hợp câu trả lời cuối cùng."
             }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
+
+        # Mô phỏng nhận diện intent gọi Tool
+        if "p999" in prompt_lower:
             return {
                 "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
+                "tool_name": "check_room_availability",
+                "arguments": {"room_id": "P999", "datetime_str": "10:00 20/09/2026"},
+                "thought": "Người dùng muốn kiểm tra phòng P999. Tôi sẽ gọi tool check_room_availability."
+            }
+        elif "đặt" in prompt_lower and ("p301" in prompt_lower or "p205" in prompt_lower):
+            room_id = "P301" if "p301" in prompt_lower else "P205"
+            return {
+                "type": "tool_call",
+                "tool_name": "create_booking",
+                "arguments": {"room_id": room_id, "datetime_str": "09:00 15/09/2026", "organizer": "Nguyễn Văn An", "purpose": "Họp nhóm dự án"},
+                "thought": f"Người dùng yêu cầu đặt phòng {room_id}. Tôi sẽ gọi tool create_booking."
+            }
+        elif "p301" in prompt_lower or "p205" in prompt_lower:
+            room_id = "P301" if "p301" in prompt_lower else "P205"
+            return {
+                "type": "tool_call",
+                "tool_name": "check_room_availability",
+                "arguments": {"room_id": room_id, "datetime_str": "09:00 15/09/2026"},
+                "thought": f"Người dùng muốn kiểm tra tình trạng phòng {room_id}. Tôi sẽ gọi tool check_room_availability."
             }
         else:
             return {
                 "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "content": f"[Mock Agent Response]: Xin chào! Quy định sử dụng phòng họp VinUni yêu cầu đặt phòng trước ít nhất 2 giờ và trả phòng đúng giờ để nhường cho nhóm tiếp theo.",
+                "thought": "Câu hỏi chung về quy định sử dụng phòng họp, trả lời trực tiếp không cần gọi Tool."
             }
 
 
